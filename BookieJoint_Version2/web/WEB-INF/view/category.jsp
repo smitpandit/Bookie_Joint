@@ -1,85 +1,70 @@
 <%--
     Document   : category
-    Created on : Jun 9, 2010, 3:59:32 PM
+    Created on : May 21, 2010, 12:20:23 AM
     Author     : tgiunipero
 --%>
 
 
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql"%>
+<div id="categoryLeftColumn">
 
-<sql:query var="categories" dataSource="jdbc/affablebean">
-    SELECT * FROM category
-</sql:query>
+    <c:forEach var="category" items="${categories}">
 
-<sql:query var="selectedCategory" dataSource="jdbc/affablebean">
-    SELECT name FROM category WHERE id = ?
-    <sql:param value="${pageContext.request.queryString}"/>
-</sql:query>
+        <c:choose>
+            <c:when test="${category.name == selectedCategory.name}">
+                <div class="categoryButton" id="selectedCategory">
+                    <span class="categoryText">
+                        ${category.name}
+                    </span>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <a href="<c:url value='category?${category.id}'/>" class="categoryButton">
+                    <span class="categoryText">
+                        ${category.name}
+                    </span>
+                </a>
+            </c:otherwise>
+        </c:choose>
 
-<sql:query var="categoryProducts" dataSource="jdbc/affablebean">
-    SELECT * FROM product WHERE category_id = ?
-    <sql:param value="${pageContext.request.queryString}"/>
-</sql:query>
+    </c:forEach>
 
-            <div id="categoryLeftColumn">
+</div>
 
-                <c:forEach var="category" items="${categories.rows}">
+<div id="categoryRightColumn">
 
-                    <c:choose>
-                        <c:when test="${category.id == pageContext.request.queryString}">
-                            <div class="categoryButton" id="selectedCategory">
-                                <span class="categoryText">
-                                    ${category.name}
-                                </span>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="category?${category.id}" class="categoryButton">
-                                <span class="categoryText">
-                                    ${category.name}
-                                </span>
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
+    <p id="categoryTitle"><fmt:message key="${selectedCategory.name}" /></p>
 
-                </c:forEach>
+    <table id="productTable">
 
-            </div>
+        <c:forEach var="product" items="${categoryProducts}" varStatus="iter">
 
-            <div id="categoryRightColumn">
+            <tr class="${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}">
+                <td>
+                    <img src="${initParam.productImagePath}${product.name}.png"
+                         alt="${product.name}">
+                </td>
 
-                <p id="categoryTitle">${selectedCategory.rows[0].name}</p>
+                <td>
+                    ${product.name}
+                    <br>
+                    <span class="smallText">${product.description}</span>
+                </td>
 
-                <table id="productTable">
+                <td>&euro; ${product.price}</td>
 
-                    <c:forEach var="product" items="${categoryProducts.rows}" varStatus="iter">
+                <td>
+                    <form action="<c:url value='addToCart'/>" method="post">
+                        <input type="hidden"
+                               name="productId"
+                               value="${product.id}">
+                        <input type="submit"
+                               name="submit"
+                               value="add to cart">
+                    </form>
+                </td>
+            </tr>
 
-                        <tr class="${((iter.index % 2) == 0) ? 'lightBlue' : 'white'}">
-                            <td>
-                                <img src="${initParam.productImagePath}${product.name}.png"
-                                    alt="image of ${product.name}">
-                            </td>
-                            <td>
-                                ${product.name}
-                                <br>
-                                <span class="smallText">${product.description}</span>
-                            </td>
-                            <td>
-                                &euro; ${product.price} / unit
-                            </td>
-                            <td>
-                                <form action="addToCart" method="post">
-                                    <input type="hidden"
-                                           name="productId"
-                                           value="${product.id}">
-                                    <input type="submit"
-                                           value="add to cart">
-                                </form>
-                            </td>
-                        </tr>
+        </c:forEach>
 
-                    </c:forEach>
-
-                </table>
-            </div>
+    </table>
+</div>
